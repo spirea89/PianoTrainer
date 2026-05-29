@@ -1,16 +1,16 @@
 const NOTES = [
-  { solfege: "do", name: "C4", midi: 60, frequency: 261.63, staffStep: 0 },
-  { solfege: "re", name: "D4", midi: 62, frequency: 293.66, staffStep: 1 },
-  { solfege: "mi", name: "E4", midi: 64, frequency: 329.63, staffStep: 2 },
-  { solfege: "fa", name: "F4", midi: 65, frequency: 349.23, staffStep: 3 },
-  { solfege: "sol", name: "G4", midi: 67, frequency: 392.0, staffStep: 4 },
-  { solfege: "la", name: "A4", midi: 69, frequency: 440.0, staffStep: 5 },
-  { solfege: "si", name: "B4", midi: 71, frequency: 493.88, staffStep: 6 },
-  { solfege: "do", name: "C5", midi: 72, frequency: 523.25, staffStep: 7 },
-  { solfege: "re", name: "D5", midi: 74, frequency: 587.33, staffStep: 8 },
-  { solfege: "mi", name: "E5", midi: 76, frequency: 659.25, staffStep: 9 },
-  { solfege: "fa", name: "F5", midi: 77, frequency: 698.46, staffStep: 10 },
-  { solfege: "sol", name: "G5", midi: 79, frequency: 783.99, staffStep: 11 },
+  { solfege: "do", name: "C4", midi: 60, frequency: 261.63, staffStep: -2 },
+  { solfege: "re", name: "D4", midi: 62, frequency: 293.66, staffStep: -1 },
+  { solfege: "mi", name: "E4", midi: 64, frequency: 329.63, staffStep: 0 },
+  { solfege: "fa", name: "F4", midi: 65, frequency: 349.23, staffStep: 1 },
+  { solfege: "sol", name: "G4", midi: 67, frequency: 392.0, staffStep: 2 },
+  { solfege: "la", name: "A4", midi: 69, frequency: 440.0, staffStep: 3 },
+  { solfege: "si", name: "B4", midi: 71, frequency: 493.88, staffStep: 4 },
+  { solfege: "do", name: "C5", midi: 72, frequency: 523.25, staffStep: 5 },
+  { solfege: "re", name: "D5", midi: 74, frequency: 587.33, staffStep: 6 },
+  { solfege: "mi", name: "E5", midi: 76, frequency: 659.25, staffStep: 7 },
+  { solfege: "fa", name: "F5", midi: 77, frequency: 698.46, staffStep: 8 },
+  { solfege: "sol", name: "G5", midi: 79, frequency: 783.99, staffStep: 9 },
 ];
 
 const SUPABASE_URL = "https://ctyxpvybgblwkeelzjxs.supabase.co";
@@ -209,12 +209,12 @@ function renderTarget() {
 function renderLedgerLines(y) {
   ledgerLines.innerHTML = "";
 
-  if (y <= 75) {
-    addLedgerLine(75);
+  for (let ledgerY = 75; ledgerY >= y; ledgerY -= 35) {
+    addLedgerLine(ledgerY);
   }
 
-  if (y >= 285) {
-    addLedgerLine(285);
+  for (let ledgerY = 285; ledgerY <= y; ledgerY += 35) {
+    addLedgerLine(ledgerY);
   }
 }
 
