@@ -447,8 +447,8 @@ async function loadProgress() {
 
   const days = data || [];
   const today = days.find((day) => day.practice_date === dateKey(new Date()));
-  pointsValue.textContent = days.reduce((sum, day) => sum + day.points, 0).toString();
-  todayValue.textContent = (today?.points || 0).toString();
+  pointsValue.textContent = (today?.points || 0).toString();
+  todayValue.textContent = calculateStreak(days).toString();
   renderCalendar(days);
 }
 
@@ -468,8 +468,22 @@ function renderCalendar(days) {
       day: "numeric",
     });
     cell.title = progress ? `${readableDate}: ${progress.points} points` : readableDate;
+    cell.textContent = progress?.points ? progress.points.toString() : "";
     calendarGrid.appendChild(cell);
   }
+}
+
+function calculateStreak(days) {
+  const practicedDates = new Set(days.filter((day) => day.points > 0).map((day) => day.practice_date));
+  let streak = 0;
+  const cursor = new Date();
+
+  while (practicedDates.has(dateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
 }
 
 function setAuthBusy(isBusy, message) {

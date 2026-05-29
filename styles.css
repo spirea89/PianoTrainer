@@ -321,9 +321,15 @@ select {
 
 .day {
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   border-radius: 6px;
   background: #dbe3ee;
   border: 1px solid #c8d2de;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
 }
 
 .day.practiced {
