@@ -34,7 +34,7 @@ const userBadge = document.querySelector("#userBadge");
 const pointsValue = document.querySelector("#pointsValue");
 const todayValue = document.querySelector("#todayValue");
 const calendarGrid = document.querySelector("#calendarGrid");
-const noteButtons = document.querySelector("#noteButtons");
+const noteSelect = document.querySelector("#noteSelect");
 const listenButton = document.querySelector("#listenButton");
 const skipButton = document.querySelector("#skipButton");
 const nextButton = document.querySelector("#nextButton");
@@ -64,7 +64,7 @@ let currentUser;
 let currentProfile;
 
 renderTarget();
-renderNoteButtons();
+renderNoteSelect();
 renderCalendar([]);
 initializeAuth();
 
@@ -74,6 +74,7 @@ nextButton.addEventListener("click", nextRandomNote);
 authForm.addEventListener("submit", login);
 signupButton.addEventListener("click", signup);
 logoutButton.addEventListener("click", logout);
+noteSelect.addEventListener("change", () => selectNote(Number(noteSelect.value)));
 
 async function toggleListening() {
   if (listening) {
@@ -217,28 +218,25 @@ function renderTarget() {
   noteStem.setAttribute("y1", y - 5);
   noteStem.setAttribute("y2", y - 98);
   renderLedgerLines(y);
-  updateActiveNoteButton();
+  updateNoteSelect();
 }
 
-function renderNoteButtons() {
-  noteButtons.innerHTML = "";
+function renderNoteSelect() {
+  noteSelect.innerHTML = "";
 
   NOTES.forEach((note, index) => {
-    const button = document.createElement("button");
-    button.className = "note-button";
-    button.type = "button";
-    button.textContent = `${note.solfege} ${note.name}`;
-    button.addEventListener("click", () => selectNote(index));
-    noteButtons.appendChild(button);
+    const option = document.createElement("option");
+    option.value = index.toString();
+    option.textContent = `${note.solfege} ${note.name}`;
+    noteSelect.appendChild(option);
   });
 
-  updateActiveNoteButton();
+  updateNoteSelect();
 }
 
-function updateActiveNoteButton() {
-  [...noteButtons.children].forEach((button, index) => {
-    button.classList.toggle("active", NOTES[index].midi === currentNote.midi);
-  });
+function updateNoteSelect() {
+  const index = NOTES.findIndex((note) => note.midi === currentNote.midi);
+  noteSelect.value = index.toString();
 }
 
 function renderLedgerLines(y) {
@@ -298,6 +296,7 @@ async function setSession(session) {
     userBadge.textContent = "Guest";
     authTitle.textContent = "Save practice progress";
     authStatus.textContent = "Practice works as guest, but points and calendar need a profile.";
+    document.querySelector("#authPanel").classList.remove("signed-in");
     authForm.classList.remove("signed-in");
     usernameInput.disabled = false;
     passwordInput.disabled = false;
@@ -314,6 +313,8 @@ async function setSession(session) {
   userBadge.textContent = username;
   authTitle.textContent = `Hi, ${username}`;
   authStatus.textContent = "Progress is being saved.";
+  document.querySelector("#authPanel").classList.add("signed-in");
+  authForm.classList.add("signed-in");
   usernameInput.value = username;
   passwordInput.value = "";
   usernameInput.disabled = true;

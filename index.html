@@ -28,11 +28,11 @@
             <strong id="authTitle">Save practice progress</strong>
           </div>
           <form class="auth-form" id="authForm">
-            <label>
+            <label class="auth-field">
               <span>Username</span>
               <input id="usernameInput" name="username" autocomplete="username" minlength="3" required />
             </label>
-            <label>
+            <label class="auth-field">
               <span>Password</span>
               <input id="passwordInput" name="password" type="password" autocomplete="current-password" minlength="6" required />
             </label>
@@ -79,8 +79,10 @@
         </section>
 
         <section class="note-guide" aria-label="Check note positions">
-          <span class="label">Note check</span>
-          <div class="note-buttons" id="noteButtons"></div>
+          <label>
+            <span class="label">Note check</span>
+            <select id="noteSelect" aria-label="Choose note to check"></select>
+          </label>
         </section>
 
         <section class="progress-panel" aria-label="Practice progress">
