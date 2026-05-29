@@ -239,6 +239,10 @@ function updateLevel(rms) {
 }
 
 function microphoneErrorMessage(error) {
+  if (error?.name === "NotAllowedError" && error?.message?.toLowerCase().includes("system")) {
+    return "Windows is blocking microphone access. Open Windows Settings > Privacy & security > Microphone, enable microphone access, then allow desktop apps.";
+  }
+
   if (error?.name === "NotAllowedError") {
     return "Microphone is still blocked. Check the browser site setting and Windows microphone privacy settings, then press Start listening again.";
   }
