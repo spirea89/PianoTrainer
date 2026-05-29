@@ -446,24 +446,28 @@ async function loadProgress() {
   }
 
   const days = data || [];
+  const today = days.find((day) => day.practice_date === dateKey(new Date()));
   pointsValue.textContent = days.reduce((sum, day) => sum + day.points, 0).toString();
-  todayValue.textContent = (days.find((day) => day.practice_date === dateKey(new Date()))?.correct_notes || 0).toString();
+  todayValue.textContent = (today?.points || 0).toString();
   renderCalendar(days);
 }
 
 function renderCalendar(days) {
-  const practicedDates = new Set(days.map((day) => day.practice_date));
+  const progressByDate = new Map(days.map((day) => [day.practice_date, day]));
   calendarGrid.innerHTML = "";
 
   for (let offset = 27; offset >= 0; offset -= 1) {
     const day = new Date();
     day.setDate(day.getDate() - offset);
+    const key = dateKey(day);
+    const progress = progressByDate.get(key);
     const cell = document.createElement("span");
-    cell.className = `day${practicedDates.has(dateKey(day)) ? " practiced" : ""}`;
-    cell.title = day.toLocaleDateString(undefined, {
+    cell.className = `day${progress ? " practiced" : ""}`;
+    const readableDate = day.toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
     });
+    cell.title = progress ? `${readableDate}: ${progress.points} points` : readableDate;
     calendarGrid.appendChild(cell);
   }
 }
@@ -502,7 +506,9 @@ function isToday(value) {
 
 function dateKey(value) {
   const date = new Date(value);
-  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 function getRms(buffer) {
