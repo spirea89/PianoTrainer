@@ -34,3 +34,5 @@ http://localhost:5173
 3. For username-only accounts, open `Authentication > Sign In / Providers > Email` and turn off email confirmation.
 
 The browser app uses the public Supabase project URL and publishable key. User data is protected by Row Level Security policies in `supabase-schema.sql`.
+
+Progress is stored as one row per user per day in `daily_progress`. Re-running `supabase-schema.sql` removes the older per-note `note_attempts` table.

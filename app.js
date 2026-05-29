@@ -168,7 +168,7 @@ function compareNote(heardNote) {
     setState("correct");
     statusText.textContent = "Correct!";
     if (!advanceTimer) {
-      recordCorrectNote(currentNote);
+      recordCorrectNote();
       advanceTimer = window.setTimeout(nextRandomNote, 450);
     }
   } else if (wrongFrames > 8) {
@@ -409,16 +409,14 @@ async function saveProfile(userId, username) {
   }
 }
 
-async function recordCorrectNote(note) {
+async function recordCorrectNote() {
   if (!currentUser || !supabaseClient) {
     return;
   }
 
-  const { error } = await supabaseClient.from("note_attempts").insert({
-    user_id: currentUser.id,
-    note: note.name,
-    correct: true,
-    points: POINTS_PER_NOTE,
+  const { error } = await supabaseClient.rpc("add_daily_points", {
+    point_delta: POINTS_PER_NOTE,
+    correct_delta: 1,
   });
 
   if (error) {
@@ -437,26 +435,25 @@ async function loadProgress() {
   since.setHours(0, 0, 0, 0);
 
   const { data, error } = await supabaseClient
-    .from("note_attempts")
-    .select("points, created_at")
+    .from("daily_progress")
+    .select("points, correct_notes, practice_date")
     .eq("user_id", currentUser.id)
-    .eq("correct", true)
-    .gte("created_at", since.toISOString())
-    .order("created_at", { ascending: true });
+    .gte("practice_date", dateKey(since))
+    .order("practice_date", { ascending: true });
 
   if (error) {
     authStatus.textContent = `Could not load progress: ${error.message}`;
     return;
   }
 
-  const attempts = data || [];
-  pointsValue.textContent = attempts.reduce((sum, attempt) => sum + attempt.points, 0).toString();
-  todayValue.textContent = attempts.filter((attempt) => isToday(attempt.created_at)).length.toString();
-  renderCalendar(attempts);
+  const days = data || [];
+  pointsValue.textContent = days.reduce((sum, day) => sum + day.points, 0).toString();
+  todayValue.textContent = (days.find((day) => day.practice_date === dateKey(new Date()))?.correct_notes || 0).toString();
+  renderCalendar(days);
 }
 
-function renderCalendar(attempts) {
-  const practicedDates = new Set(attempts.map((attempt) => dateKey(attempt.created_at)));
+function renderCalendar(days) {
+  const practicedDates = new Set(days.map((day) => day.practice_date));
   calendarGrid.innerHTML = "";
 
   for (let offset = 27; offset >= 0; offset -= 1) {
