@@ -34,6 +34,7 @@ const userBadge = document.querySelector("#userBadge");
 const pointsValue = document.querySelector("#pointsValue");
 const todayValue = document.querySelector("#todayValue");
 const calendarGrid = document.querySelector("#calendarGrid");
+const noteButtons = document.querySelector("#noteButtons");
 const listenButton = document.querySelector("#listenButton");
 const skipButton = document.querySelector("#skipButton");
 const nextButton = document.querySelector("#nextButton");
@@ -63,6 +64,7 @@ let currentUser;
 let currentProfile;
 
 renderTarget();
+renderNoteButtons();
 renderCalendar([]);
 initializeAuth();
 
@@ -190,6 +192,17 @@ function nextRandomNote() {
   statusText.textContent = listening ? "Listening. Play the target note clearly." : "Press Start listening when you are ready.";
 }
 
+function selectNote(index) {
+  currentNote = NOTES[index];
+  correctFrames = 0;
+  wrongFrames = 0;
+  window.clearTimeout(advanceTimer);
+  advanceTimer = undefined;
+  renderTarget();
+  setState("idle");
+  statusText.textContent = listening ? "Listening. Play the target note clearly." : "Press Start listening when you are ready.";
+}
+
 function pickRandomNote() {
   return NOTES[Math.floor(Math.random() * NOTES.length)];
 }
@@ -204,6 +217,28 @@ function renderTarget() {
   noteStem.setAttribute("y1", y - 5);
   noteStem.setAttribute("y2", y - 98);
   renderLedgerLines(y);
+  updateActiveNoteButton();
+}
+
+function renderNoteButtons() {
+  noteButtons.innerHTML = "";
+
+  NOTES.forEach((note, index) => {
+    const button = document.createElement("button");
+    button.className = "note-button";
+    button.type = "button";
+    button.textContent = `${note.solfege} ${note.name}`;
+    button.addEventListener("click", () => selectNote(index));
+    noteButtons.appendChild(button);
+  });
+
+  updateActiveNoteButton();
+}
+
+function updateActiveNoteButton() {
+  [...noteButtons.children].forEach((button, index) => {
+    button.classList.toggle("active", NOTES[index].midi === currentNote.midi);
+  });
 }
 
 function renderLedgerLines(y) {
