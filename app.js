@@ -23,9 +23,11 @@ const targetName = document.querySelector("#targetName");
 const heardName = document.querySelector("#heardName");
 const statusText = document.querySelector("#statusText");
 const diagnosticText = document.querySelector("#diagnosticText");
+const authPanel = document.querySelector("#authPanel");
 const authForm = document.querySelector("#authForm");
 const authTitle = document.querySelector("#authTitle");
 const authStatus = document.querySelector("#authStatus");
+const loginButton = document.querySelector("#loginButton");
 const usernameInput = document.querySelector("#usernameInput");
 const passwordInput = document.querySelector("#passwordInput");
 const signupButton = document.querySelector("#signupButton");
@@ -294,10 +296,14 @@ async function setSession(session) {
     userBadge.textContent = "Guest";
     authTitle.textContent = "Save practice progress";
     authStatus.textContent = "Practice works as guest, but points and calendar need a profile.";
-    document.querySelector("#authPanel").classList.remove("signed-in");
+    authPanel.classList.remove("signed-in");
     authForm.classList.remove("signed-in");
     usernameInput.disabled = false;
     passwordInput.disabled = false;
+    loginButton.disabled = false;
+    signupButton.disabled = false;
+    usernameInput.value = "";
+    passwordInput.value = "";
     signupButton.classList.remove("hidden");
     logoutButton.classList.add("hidden");
     pointsValue.textContent = "0";
@@ -311,7 +317,7 @@ async function setSession(session) {
   userBadge.textContent = username;
   authTitle.textContent = `Hi, ${username}`;
   authStatus.textContent = "Progress is being saved.";
-  document.querySelector("#authPanel").classList.add("signed-in");
+  authPanel.classList.add("signed-in");
   authForm.classList.add("signed-in");
   usernameInput.value = username;
   passwordInput.value = "";
@@ -379,7 +385,19 @@ async function login(event) {
 }
 
 async function logout() {
-  await supabaseClient.auth.signOut();
+  authStatus.textContent = "Logging out...";
+  logoutButton.disabled = true;
+
+  const { error } = await supabaseClient.auth.signOut();
+
+  logoutButton.disabled = false;
+
+  if (error) {
+    authStatus.textContent = `Could not log out: ${error.message}`;
+    return;
+  }
+
+  await setSession(null);
 }
 
 async function loadProfile() {
@@ -491,7 +509,7 @@ function setAuthBusy(isBusy, message) {
   usernameInput.disabled = isBusy || Boolean(currentUser);
   passwordInput.disabled = isBusy || Boolean(currentUser);
   signupButton.disabled = isBusy;
-  authForm.querySelector("#loginButton").disabled = isBusy;
+  loginButton.disabled = isBusy;
 }
 
 function cleanUsername(username) {
