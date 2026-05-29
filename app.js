@@ -17,6 +17,7 @@ const trainer = document.querySelector("#trainer");
 const targetName = document.querySelector("#targetName");
 const heardName = document.querySelector("#heardName");
 const statusText = document.querySelector("#statusText");
+const diagnosticText = document.querySelector("#diagnosticText");
 const listenButton = document.querySelector("#listenButton");
 const skipButton = document.querySelector("#skipButton");
 const nextButton = document.querySelector("#nextButton");
@@ -64,17 +65,13 @@ async function toggleListening() {
   try {
     listenButton.textContent = "Requesting mic...";
     statusText.textContent = "Waiting for microphone permission.";
+    diagnosticText.textContent = `Secure page: ${window.isSecureContext ? "yes" : "no"}. Browser permission prompt should appear now.`;
     levelValue.textContent = "waiting";
 
-    currentStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-      },
-    });
+    currentStream = await requestMicrophoneStream();
 
     audioContext = new AudioContext();
+    await audioContext.resume();
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 4096;
     microphone = audioContext.createMediaStreamSource(currentStream);
@@ -84,6 +81,7 @@ async function toggleListening() {
     listenButton.textContent = "Stop listening";
     listenButton.classList.add("listening");
     statusText.textContent = "Listening. Play the target note clearly.";
+    diagnosticText.textContent = describeStream(currentStream);
     detectPitch();
   } catch (error) {
     listenButton.textContent = "Start listening";
@@ -91,6 +89,7 @@ async function toggleListening() {
     levelValue.textContent = "blocked";
     updateLevel(0);
     statusText.textContent = microphoneErrorMessage(error);
+    diagnosticText.textContent = `Browser error: ${error?.name || "UnknownError"}${error?.message ? ` - ${error.message}` : ""}`;
   }
 }
 
@@ -101,6 +100,7 @@ function stopListening() {
   listenButton.classList.remove("listening");
   heardName.textContent = "--";
   levelValue.textContent = "idle";
+  diagnosticText.textContent = "Microphone stopped.";
   updateLevel(0);
   setState("idle");
 
@@ -240,7 +240,7 @@ function updateLevel(rms) {
 
 function microphoneErrorMessage(error) {
   if (error?.name === "NotAllowedError") {
-    return "Microphone permission was blocked. Allow microphone access, then press Start listening again.";
+    return "Microphone is still blocked. Check the browser site setting and Windows microphone privacy settings, then press Start listening again.";
   }
 
   if (error?.name === "NotFoundError") {
@@ -252,6 +252,37 @@ function microphoneErrorMessage(error) {
   }
 
   return "Microphone access is needed for pitch detection.";
+}
+
+async function requestMicrophoneStream() {
+  const cleanPianoConstraints = {
+    audio: {
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+    },
+  };
+
+  try {
+    return await navigator.mediaDevices.getUserMedia(cleanPianoConstraints);
+  } catch (error) {
+    if (error?.name === "OverconstrainedError" || error?.name === "ConstraintNotSatisfiedError") {
+      diagnosticText.textContent = "Detailed audio settings failed, retrying with default microphone settings.";
+      return navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+
+    throw error;
+  }
+}
+
+function describeStream(stream) {
+  const track = stream.getAudioTracks()[0];
+
+  if (!track) {
+    return "Microphone stream opened, but no audio track was found.";
+  }
+
+  return `Using microphone: ${track.label || "default input"} (${track.readyState}).`;
 }
 
 function autoCorrelate(buffer, sampleRate) {
