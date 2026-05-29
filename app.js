@@ -13,11 +13,27 @@ const NOTES = [
   { solfege: "sol", name: "G5", midi: 79, frequency: 783.99, staffStep: 11 },
 ];
 
+const SUPABASE_URL = "https://ctyxpvybgblwkeelzjxs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wk0lGJ38_amb7oqNNzCnYg_SUoNJXLJ";
+const POINTS_PER_NOTE = 10;
+const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const trainer = document.querySelector("#trainer");
 const targetName = document.querySelector("#targetName");
 const heardName = document.querySelector("#heardName");
 const statusText = document.querySelector("#statusText");
 const diagnosticText = document.querySelector("#diagnosticText");
+const authForm = document.querySelector("#authForm");
+const authTitle = document.querySelector("#authTitle");
+const authStatus = document.querySelector("#authStatus");
+const usernameInput = document.querySelector("#usernameInput");
+const passwordInput = document.querySelector("#passwordInput");
+const signupButton = document.querySelector("#signupButton");
+const logoutButton = document.querySelector("#logoutButton");
+const userBadge = document.querySelector("#userBadge");
+const pointsValue = document.querySelector("#pointsValue");
+const todayValue = document.querySelector("#todayValue");
+const calendarGrid = document.querySelector("#calendarGrid");
 const listenButton = document.querySelector("#listenButton");
 const skipButton = document.querySelector("#skipButton");
 const nextButton = document.querySelector("#nextButton");
@@ -43,12 +59,19 @@ let listening = false;
 let correctFrames = 0;
 let wrongFrames = 0;
 let advanceTimer;
+let currentUser;
+let currentProfile;
 
 renderTarget();
+renderCalendar([]);
+initializeAuth();
 
 listenButton.addEventListener("click", toggleListening);
 skipButton.addEventListener("click", nextRandomNote);
 nextButton.addEventListener("click", nextRandomNote);
+authForm.addEventListener("submit", login);
+signupButton.addEventListener("click", signup);
+logoutButton.addEventListener("click", logout);
 
 async function toggleListening() {
   if (listening) {
@@ -143,6 +166,7 @@ function compareNote(heardNote) {
     setState("correct");
     statusText.textContent = "Correct!";
     if (!advanceTimer) {
+      recordCorrectNote(currentNote);
       advanceTimer = window.setTimeout(nextRandomNote, 450);
     }
   } else if (wrongFrames > 8) {
@@ -215,6 +239,239 @@ function noteFromFrequency(frequency) {
   }, NOTES[0]);
 
   return note;
+}
+
+async function initializeAuth() {
+  if (!supabaseClient) {
+    authStatus.textContent = "Supabase did not load. Check your internet connection and refresh.";
+    return;
+  }
+
+  const { data } = await supabaseClient.auth.getSession();
+  await setSession(data.session);
+
+  supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    await setSession(session);
+  });
+}
+
+async function setSession(session) {
+  currentUser = session?.user || null;
+  currentProfile = null;
+
+  if (!currentUser) {
+    userBadge.textContent = "Guest";
+    authTitle.textContent = "Save practice progress";
+    authStatus.textContent = "Practice works as guest, but points and calendar need a profile.";
+    authForm.classList.remove("signed-in");
+    usernameInput.disabled = false;
+    passwordInput.disabled = false;
+    signupButton.classList.remove("hidden");
+    logoutButton.classList.add("hidden");
+    pointsValue.textContent = "0";
+    todayValue.textContent = "0";
+    renderCalendar([]);
+    return;
+  }
+
+  currentProfile = await loadProfile();
+  const username = currentProfile?.username || usernameFromEmail(currentUser.email);
+  userBadge.textContent = username;
+  authTitle.textContent = `Hi, ${username}`;
+  authStatus.textContent = "Progress is being saved.";
+  usernameInput.value = username;
+  passwordInput.value = "";
+  usernameInput.disabled = true;
+  passwordInput.disabled = true;
+  signupButton.classList.add("hidden");
+  logoutButton.classList.remove("hidden");
+  await loadProgress();
+}
+
+async function signup() {
+  const username = cleanUsername(usernameInput.value);
+  const password = passwordInput.value;
+
+  if (!username || password.length < 6) {
+    authStatus.textContent = "Use a username with 3+ letters and a password with 6+ characters.";
+    return;
+  }
+
+  setAuthBusy(true, "Creating profile...");
+  const email = emailForUsername(username);
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username },
+    },
+  });
+
+  if (error) {
+    setAuthBusy(false, readableAuthError(error));
+    return;
+  }
+
+  if (data.user) {
+    await saveProfile(data.user.id, username);
+  }
+
+  setAuthBusy(false, "Profile created. If Supabase asks for email confirmation, disable it for username-only login.");
+  await setSession(data.session);
+}
+
+async function login(event) {
+  event.preventDefault();
+  const username = cleanUsername(usernameInput.value);
+  const password = passwordInput.value;
+
+  if (!username || !password) {
+    authStatus.textContent = "Enter username and password.";
+    return;
+  }
+
+  setAuthBusy(true, "Logging in...");
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email: emailForUsername(username),
+    password,
+  });
+
+  if (error) {
+    setAuthBusy(false, readableAuthError(error));
+    return;
+  }
+
+  setAuthBusy(false, "Logged in.");
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+}
+
+async function loadProfile() {
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("username")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    authStatus.textContent = `Could not load profile: ${error.message}`;
+    return null;
+  }
+
+  return data;
+}
+
+async function saveProfile(userId, username) {
+  const { error } = await supabaseClient.from("profiles").upsert({
+    id: userId,
+    username,
+  });
+
+  if (error) {
+    authStatus.textContent = `Profile save failed: ${error.message}`;
+  }
+}
+
+async function recordCorrectNote(note) {
+  if (!currentUser || !supabaseClient) {
+    return;
+  }
+
+  const { error } = await supabaseClient.from("note_attempts").insert({
+    user_id: currentUser.id,
+    note: note.name,
+    correct: true,
+    points: POINTS_PER_NOTE,
+  });
+
+  if (error) {
+    authStatus.textContent = `Could not save points: ${error.message}`;
+    return;
+  }
+
+  await loadProgress();
+}
+
+async function loadProgress() {
+  if (!currentUser || !supabaseClient) return;
+
+  const since = new Date();
+  since.setDate(since.getDate() - 28);
+  since.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabaseClient
+    .from("note_attempts")
+    .select("points, created_at")
+    .eq("user_id", currentUser.id)
+    .eq("correct", true)
+    .gte("created_at", since.toISOString())
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    authStatus.textContent = `Could not load progress: ${error.message}`;
+    return;
+  }
+
+  const attempts = data || [];
+  pointsValue.textContent = attempts.reduce((sum, attempt) => sum + attempt.points, 0).toString();
+  todayValue.textContent = attempts.filter((attempt) => isToday(attempt.created_at)).length.toString();
+  renderCalendar(attempts);
+}
+
+function renderCalendar(attempts) {
+  const practicedDates = new Set(attempts.map((attempt) => dateKey(attempt.created_at)));
+  calendarGrid.innerHTML = "";
+
+  for (let offset = 27; offset >= 0; offset -= 1) {
+    const day = new Date();
+    day.setDate(day.getDate() - offset);
+    const cell = document.createElement("span");
+    cell.className = `day${practicedDates.has(dateKey(day)) ? " practiced" : ""}`;
+    cell.title = day.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
+    calendarGrid.appendChild(cell);
+  }
+}
+
+function setAuthBusy(isBusy, message) {
+  authStatus.textContent = message;
+  usernameInput.disabled = isBusy || Boolean(currentUser);
+  passwordInput.disabled = isBusy || Boolean(currentUser);
+  signupButton.disabled = isBusy;
+  authForm.querySelector("#loginButton").disabled = isBusy;
+}
+
+function cleanUsername(username) {
+  return username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+}
+
+function emailForUsername(username) {
+  return `${username}@pianotrainer.example.com`;
+}
+
+function usernameFromEmail(email = "") {
+  return email.split("@")[0] || "Player";
+}
+
+function readableAuthError(error) {
+  if (error.message?.toLowerCase().includes("email not confirmed")) {
+    return "Login is waiting for email confirmation. In Supabase Auth settings, turn off Confirm email for username-only profiles.";
+  }
+
+  return error.message;
+}
+
+function isToday(value) {
+  return dateKey(value) === dateKey(new Date());
+}
+
+function dateKey(value) {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 }
 
 function getRms(buffer) {

@@ -14,10 +14,36 @@
             <p class="eyebrow">PianoTrainer</p>
             <h1>Play the note on the staff</h1>
           </div>
-          <button class="icon-button" id="nextButton" type="button" aria-label="Next random note" title="Next random note">
-            <span aria-hidden="true">></span>
-          </button>
+          <div class="top-actions">
+            <span class="user-badge" id="userBadge">Guest</span>
+            <button class="icon-button" id="nextButton" type="button" aria-label="Next random note" title="Next random note">
+              <span aria-hidden="true">></span>
+            </button>
+          </div>
         </header>
+
+        <section class="auth-panel" id="authPanel" aria-label="User profile">
+          <div>
+            <span class="label">Profile</span>
+            <strong id="authTitle">Save practice progress</strong>
+          </div>
+          <form class="auth-form" id="authForm">
+            <label>
+              <span>Username</span>
+              <input id="usernameInput" name="username" autocomplete="username" minlength="3" required />
+            </label>
+            <label>
+              <span>Password</span>
+              <input id="passwordInput" name="password" type="password" autocomplete="current-password" minlength="6" required />
+            </label>
+            <div class="auth-buttons">
+              <button class="primary" id="loginButton" type="submit">Log in</button>
+              <button class="secondary" id="signupButton" type="button">Sign up</button>
+              <button class="secondary hidden" id="logoutButton" type="button">Log out</button>
+            </div>
+          </form>
+          <p class="details" id="authStatus">Practice works as guest, but points and calendar need a profile.</p>
+        </section>
 
         <section class="staff-wrap" aria-label="Piano staff">
           <svg id="staff" viewBox="0 0 820 360" role="img" aria-labelledby="staffTitle staffDesc">
@@ -52,6 +78,18 @@
           </div>
         </section>
 
+        <section class="progress-panel" aria-label="Practice progress">
+          <div class="stat">
+            <span class="label">Points</span>
+            <strong id="pointsValue">0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">Today</span>
+            <strong id="todayValue">0</strong>
+          </div>
+          <div class="calendar" id="calendarGrid" aria-label="Recent practice days"></div>
+        </section>
+
         <section class="meter" aria-label="Microphone input level">
           <div class="meter-head">
             <span class="label">Mic input</span>
@@ -72,6 +110,7 @@
       </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
   </body>
 </html>

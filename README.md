@@ -26,3 +26,11 @@ Then open:
 ```text
 http://localhost:5173
 ```
+
+## Supabase setup
+
+1. Open the Supabase SQL Editor.
+2. Run the contents of `supabase-schema.sql`.
+3. For username-only accounts, open `Authentication > Sign In / Providers > Email` and turn off email confirmation.
+
+The browser app uses the public Supabase project URL and publishable key. User data is protected by Row Level Security policies in `supabase-schema.sql`.

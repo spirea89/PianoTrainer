@@ -42,7 +42,7 @@ button {
   width: min(980px, 100%);
   min-height: min(720px, calc(100vh - 48px));
   display: grid;
-  grid-template-rows: auto minmax(270px, 1fr) auto auto auto auto;
+  grid-template-rows: auto auto minmax(270px, 1fr) auto auto auto auto auto;
   gap: 20px;
   padding: clamp(18px, 3vw, 34px);
   background: var(--panel);
@@ -67,6 +67,25 @@ button {
   align-items: start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-badge {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .eyebrow {
@@ -151,6 +170,8 @@ h1 {
   gap: 12px;
 }
 
+.auth-panel,
+.progress-panel,
 .target,
 .heard {
   min-width: 0;
@@ -158,6 +179,57 @@ h1 {
   background: #ffffff;
   border: 1px solid #dce3eb;
   border-radius: 8px;
+}
+
+.auth-panel {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.75fr) minmax(280px, 1.6fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.auth-panel strong {
+  display: block;
+  font-size: 1.2rem;
+}
+
+.auth-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid #cbd4df;
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-panel .details {
+  grid-column: 1 / -1;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .label {
@@ -175,6 +247,37 @@ h1 {
   min-height: 1.2em;
   font-size: clamp(2rem, 6vw, 4rem);
   line-height: 1;
+}
+
+.progress-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(110px, 0.25fr)) minmax(220px, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.stat strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(14, minmax(12px, 1fr));
+  gap: 5px;
+}
+
+.day {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: #dce3eb;
+  border: 1px solid #c8d2de;
+}
+
+.day.practiced {
+  background: var(--correct);
+  border-color: #26975d;
 }
 
 .meter {
@@ -272,6 +375,17 @@ h1 {
   }
 
   .readout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-panel,
+  .auth-form,
+  .progress-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-buttons {
+    display: grid;
     grid-template-columns: 1fr;
   }
 
