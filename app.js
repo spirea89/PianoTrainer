@@ -37,7 +37,6 @@ const calendarGrid = document.querySelector("#calendarGrid");
 const noteSelect = document.querySelector("#noteSelect");
 const listenButton = document.querySelector("#listenButton");
 const skipButton = document.querySelector("#skipButton");
-const nextButton = document.querySelector("#nextButton");
 const levelBar = document.querySelector("#levelBar");
 const levelValue = document.querySelector("#levelValue");
 const noteHead = document.querySelector("#noteHead");
@@ -70,7 +69,6 @@ initializeAuth();
 
 listenButton.addEventListener("click", toggleListening);
 skipButton.addEventListener("click", nextRandomNote);
-nextButton.addEventListener("click", nextRandomNote);
 authForm.addEventListener("submit", login);
 signupButton.addEventListener("click", signup);
 logoutButton.addEventListener("click", logout);

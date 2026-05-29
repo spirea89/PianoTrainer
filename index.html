@@ -12,13 +12,9 @@
         <header class="topbar">
           <div>
             <p class="eyebrow">PianoTrainer</p>
-            <h1>Play the note on the staff</h1>
           </div>
           <div class="top-actions">
             <span class="user-badge" id="userBadge">Guest</span>
-            <button class="icon-button" id="nextButton" type="button" aria-label="Next random note" title="Next random note">
-              <span aria-hidden="true">></span>
-            </button>
           </div>
         </header>
 
@@ -45,26 +41,37 @@
           <p class="details" id="authStatus">Practice works as guest, but points and calendar need a profile.</p>
         </section>
 
-        <section class="staff-wrap" aria-label="Piano staff">
-          <svg id="staff" viewBox="0 0 820 360" role="img" aria-labelledby="staffTitle staffDesc">
-            <title id="staffTitle">Piano staff with target note</title>
-            <desc id="staffDesc">The current random note is shown on a treble staff.</desc>
-            <g class="clef" aria-hidden="true">
-              <text x="72" y="220">&#119070;</text>
-            </g>
-            <g id="ledgerLines"></g>
-            <g class="staff-lines">
-              <line x1="140" y1="110" x2="760" y2="110" />
-              <line x1="140" y1="145" x2="760" y2="145" />
-              <line x1="140" y1="180" x2="760" y2="180" />
-              <line x1="140" y1="215" x2="760" y2="215" />
-              <line x1="140" y1="250" x2="760" y2="250" />
-            </g>
-            <g id="noteGroup">
-              <ellipse id="noteHead" cx="450" cy="180" rx="31" ry="22" transform="rotate(-18 450 180)" />
-              <line id="noteStem" x1="478" y1="175" x2="478" y2="82" />
-            </g>
-          </svg>
+        <section class="staff-panel" aria-label="Piano staff">
+          <div class="staff-tools">
+            <label>
+              <span class="label">Note check</span>
+              <select id="noteSelect" aria-label="Choose note to check"></select>
+            </label>
+            <button class="secondary staff-next" id="skipButton" type="button" aria-label="Next random note">
+              Next note
+            </button>
+          </div>
+          <div class="staff-wrap">
+            <svg id="staff" viewBox="0 0 820 360" role="img" aria-labelledby="staffTitle staffDesc">
+              <title id="staffTitle">Piano staff with target note</title>
+              <desc id="staffDesc">The current random note is shown on a treble staff.</desc>
+              <g class="clef" aria-hidden="true">
+                <text x="72" y="220">&#119070;</text>
+              </g>
+              <g id="ledgerLines"></g>
+              <g class="staff-lines">
+                <line x1="140" y1="110" x2="760" y2="110" />
+                <line x1="140" y1="145" x2="760" y2="145" />
+                <line x1="140" y1="180" x2="760" y2="180" />
+                <line x1="140" y1="215" x2="760" y2="215" />
+                <line x1="140" y1="250" x2="760" y2="250" />
+              </g>
+              <g id="noteGroup">
+                <ellipse id="noteHead" cx="450" cy="180" rx="31" ry="22" transform="rotate(-18 450 180)" />
+                <line id="noteStem" x1="478" y1="175" x2="478" y2="82" />
+              </g>
+            </svg>
+          </div>
         </section>
 
         <section class="readout">
@@ -76,13 +83,6 @@
             <span class="label">Heard</span>
             <strong id="heardName">--</strong>
           </div>
-        </section>
-
-        <section class="note-guide" aria-label="Check note positions">
-          <label>
-            <span class="label">Note check</span>
-            <select id="noteSelect" aria-label="Choose note to check"></select>
-          </label>
         </section>
 
         <section class="progress-panel" aria-label="Practice progress">
@@ -109,7 +109,6 @@
 
         <section class="controls">
           <button class="primary" id="listenButton" type="button">Start listening</button>
-          <button class="secondary" id="skipButton" type="button">Next note</button>
         </section>
 
         <p class="hint" id="statusText">Allow microphone access, then play the displayed note.</p>

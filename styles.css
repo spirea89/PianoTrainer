@@ -51,7 +51,7 @@ select {
   width: min(1040px, 100%);
   min-height: min(720px, calc(100vh - 48px));
   display: grid;
-  grid-template-rows: auto auto minmax(270px, 1fr) auto auto auto auto auto;
+  grid-template-rows: auto auto minmax(320px, 1fr) auto auto auto auto;
   gap: 18px;
   padding: clamp(18px, 3vw, 34px);
   background: rgba(247, 244, 238, 0.92);
@@ -106,13 +106,6 @@ select {
   text-transform: uppercase;
 }
 
-h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4.8vw, 4.5rem);
-  line-height: 0.95;
-  letter-spacing: 0;
-}
-
 .icon-button {
   width: 48px;
   height: 48px;
@@ -131,6 +124,26 @@ h1 {
 .icon-button:hover,
 .secondary:hover {
   border-color: #9eabb9;
+}
+
+.staff-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.staff-tools {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.staff-tools label {
+  width: min(320px, 100%);
+}
+
+.staff-next {
+  min-width: 120px;
 }
 
 .staff-wrap {
@@ -181,7 +194,6 @@ h1 {
 }
 
 .auth-panel,
-.note-guide,
 .progress-panel,
 .meter,
 .target,
@@ -275,12 +287,6 @@ h1 {
   min-height: 1.2em;
   font-size: clamp(2rem, 6vw, 4rem);
   line-height: 1;
-}
-
-.note-guide {
-  display: grid;
-  grid-template-columns: minmax(220px, 360px);
-  gap: 8px;
 }
 
 #noteSelect {
@@ -425,9 +431,17 @@ h1 {
   .auth-panel,
   .auth-form,
   .auth-panel.signed-in,
-  .note-guide,
   .progress-panel {
     grid-template-columns: 1fr;
+  }
+
+  .staff-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .staff-tools label {
+    width: 100%;
   }
 
   .auth-panel.signed-in .auth-form {
