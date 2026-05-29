@@ -2,6 +2,8 @@
 
 A small browser app for practicing note recognition on piano.
 
+Live app: https://spirea89.github.io/PianoTrainer/
+
 ## Features
 
 - Shows a random note on a treble staff.
